@@ -7,8 +7,6 @@ import { StackActions } from "@react-navigation/native";
 
 export const Wellcome = ({ navigation }) => {
   const fetchUser = async () => {
-        await AsyncStorage.removeItem("token");
-        await AsyncStorage.removeItem("userId");
     const token = await AsyncStorage.getItem("token");
     const userId = JSON.parse(await AsyncStorage.getItem("userId"));
     if (token !== null && userId !== null) {

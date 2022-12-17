@@ -20,7 +20,7 @@ const validationSchema = Yup.object().shape({
 export const LoginScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (route.params.successRegister) {
-      Toast.success("ثبت نام موفقیت آمیز بود");
+      Toast.success("Registration was successful");
     }
   }, []);
 
@@ -28,9 +28,9 @@ export const LoginScreen = ({ navigation, route }) => {
     try {
       const status = await LoginUse(user);
       if (status === 200) {
-        Toast.success("ورود موفقیت آمیز بود");
+        Toast.success("Login was successful");
       } else {
-        Toast.error("ایمیل یا رمز عبور صحیح نمی باشد");
+        Toast.error("Email or password is not correct");
       }
     } catch (err) {
       console.log(err);
