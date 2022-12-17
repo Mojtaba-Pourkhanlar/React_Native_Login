@@ -1,9 +1,33 @@
 import { ImageBackground, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import Constants from "expo-constants";
-import { CustomButton } from "../shared";
+import { CustomButton, decodeToken } from "../shared";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StackActions } from "@react-navigation/native";
 
 export const Wellcome = ({ navigation }) => {
+  const fetchUser = async () => {
+        await AsyncStorage.removeItem("token");
+        await AsyncStorage.removeItem("userId");
+    const token = await AsyncStorage.getItem("token");
+    const userId = JSON.parse(await AsyncStorage.getItem("userId"));
+    if (token !== null && userId !== null) {
+      const decodedToken = decodeToken(token);
+
+      if (decodedToken.user.userId === userId)
+        navigation.dispatch(StackActions.replace("Home"));
+      else {
+        await AsyncStorage.removeItem("token");
+        await AsyncStorage.removeItem("userId");
+        navigation.navigate("Login");
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
   return (
     <ImageBackground
       source={require("../assets/wellcome.jpg")}

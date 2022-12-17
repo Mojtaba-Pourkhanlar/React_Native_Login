@@ -1,17 +1,15 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Formik } from "formik";
 import CustomInput from "../shared/CustomInput";
 import CustomText from "../shared/CustomText";
 import { CustomButton } from "../shared";
 import * as Yup from "yup";
-
-
+import ToastManager, { Toast } from "toastify-react-native";
+import { registerUser } from "../services/users";
 
 const validationSchema = Yup.object().shape({
   fullname: Yup.string().required("Username required"),
-  phone: Yup.number()
-    .required("Phone required")
-    .max(10, "The number of characters must be 10"),
   email: Yup.string()
     .required("Email required")
     .email("Email address is invalid"),
@@ -24,11 +22,29 @@ const validationSchema = Yup.object().shape({
 });
 
 export const RegisterScreen = ({ navigation }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleUserRegister = async (user) => {
+    try {
+      setLoading(true);
+      const status = await registerUser(user);
+      if (status === 201) {
+        setLoading(false);
+        navigation.navigate("Login", { successRegister: true });
+      } else {
+        setLoading(false);
+        Toast.warn("An error occurred, please try again");
+        console.log("Server error");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <CustomText color="#DCC500" size={45} styles={styles.textLogin}>
-        Register
-      </CustomText>
+      <ToastManager />
+
       <Formik
         initialValues={{
           fullname: "",
@@ -36,9 +52,10 @@ export const RegisterScreen = ({ navigation }) => {
           password: "",
           passwordConfirmation: "",
         }}
-        onSubmit={(values) => console.log(values)}
-        validationSchema={validationSchema}
->
+        onSubmit={(user) => {
+          handleUserRegister(user);
+        }}
+        validationSchema={validationSchema}>
         {({ errors, touched, handleChange, handleSubmit }) => (
           <>
             <>
@@ -47,16 +64,7 @@ export const RegisterScreen = ({ navigation }) => {
                 onChange={handleChange("fullname")}
                 name="account-circle"
               />
-              {touched.fullname ? (
-                <CustomText
-                  color="#F32314"
-                  size={20}
-                  styles={{ marginBottom: 15, left: 0 }}>
-                  {errors.fullname}
-                </CustomText>
-              ) : (
-                <View style={{ marginBottom: 10 }} />
-              )}
+              <CustomText visible={touched.fullname} error={errors.fullname} />
             </>
 
             <>
@@ -65,16 +73,7 @@ export const RegisterScreen = ({ navigation }) => {
                 autoComplete="email"
                 onChange={handleChange("email")}
               />
-              {touched.email ? (
-                <CustomText
-                  color="#F32314"
-                  size={20}
-                  styles={{ marginBottom: 15, left: 0 }}>
-                  {errors.email}
-                </CustomText>
-              ) : (
-                <View style={{ marginBottom: 10 }} />
-              )}
+              <CustomText visible={touched.email} error={errors.email} />
             </>
 
             <>
@@ -86,16 +85,7 @@ export const RegisterScreen = ({ navigation }) => {
                 secureTextEntry
                 onChange={handleChange("password")}
               />
-              {touched.password ? (
-                <CustomText
-                  color="#F32314"
-                  size={20}
-                  styles={{ marginBottom: 15, left: 0 }}>
-                  {errors.password}
-                </CustomText>
-              ) : (
-                <View style={{ marginBottom: 10 }} />
-              )}
+              <CustomText visible={touched.password} error={errors.password} />
             </>
 
             <>
@@ -106,16 +96,10 @@ export const RegisterScreen = ({ navigation }) => {
                 secureTextEntry
                 onChange={handleChange("passwordConfirmation")}
               />
-              {touched.passwordConfirmation ? (
-                <CustomText
-                  color="#F32314"
-                  size={20}
-                  styles={{ marginBottom: 15, left: 0 }}>
-                  {errors.passwordConfirmation}
-                </CustomText>
-              ) : (
-                <View style={{ marginBottom: 10 }} />
-              )}
+              <CustomText
+                visible={touched.passwordConfirmation}
+                error={errors.passwordConfirmation}
+              />
             </>
 
             <View style={{ width: "90%", alignItems: "center" }}>
@@ -128,6 +112,14 @@ export const RegisterScreen = ({ navigation }) => {
           </>
         )}
       </Formik>
+      {loading ? (
+        <ActivityIndicator
+          style={{ flex: 1 }}
+          size="large"
+          color="#08342E"
+          animating={loading}
+        />
+      ) : null}
     </View>
   );
 };
@@ -140,7 +132,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   textLogin: {
-    position: "absolute",
-    top: 80,
+    // position: "absolute",
+    // top: 80,
   },
 });
